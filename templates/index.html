@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#9b3124">
+    <title>紅華祭 キャンパスガイド</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/viewer.css') }}">
+    <script defer src="{{ url_for('static', filename='js/viewer.js') }}"></script>
+</head>
+<body>
+    <div class="screen-shell" id="screenShell">
+        <div class="kiosk-canvas" id="kioskCanvas">
+            <header class="topbar">
+                <div class="brand">
+                    <div class="brand-mark" aria-hidden="true">紅</div>
+                    <div>
+                        <p id="brandSubtitle">POLYTECH FESTA</p>
+                        <h1><span id="brandTitle">紅華祭</span> <small>CAMPUS GUIDE</small></h1>
+                    </div>
+                </div>
+                <div class="top-message"><i aria-hidden="true"></i><span id="instructionText">画面をタッチしてください</span></div>
+                <button class="reset-button" id="resetAllButton" type="button"><b aria-hidden="true">⌂</b>最初に戻る</button>
+            </header>
+
+            <main class="workspace">
+                <nav class="category-nav" aria-label="企画カテゴリー">
+                    <p class="side-label">CATEGORY</p>
+                    <h2>カテゴリー</h2>
+                    <div class="category-buttons" id="categoryButtons"></div>
+                    <div class="category-note"><span aria-hidden="true">i</span><p>カテゴリーを選ぶと<br>対応するマップ位置を<br>見つけやすくできます</p></div>
+                </nav>
+
+                <aside class="detail-panel" id="detailPanel" aria-labelledby="detailPanelTitle">
+                    <header class="detail-panel-header">
+                        <p>INFORMATION</p>
+                        <h2 id="detailPanelTitle">ご案内</h2>
+                    </header>
+                    <div class="detail-content" id="detailContent" aria-live="polite">
+                        <div class="detail-loading">案内情報を読み込んでいます</div>
+                    </div>
+                    <footer class="qr-footer" id="qrFooter">
+                        <div class="qr-heading"><strong>公式情報</strong><span>スマートフォンでも確認できます</span></div>
+                        <div class="qr-list">
+                            <figure><img id="schoolQr" alt="学校ホームページのQRコード"><figcaption>学校HP</figcaption></figure>
+                            <figure><img id="instagramQr" alt="InstagramのQRコード"><figcaption>Instagram</figcaption></figure>
+                        </div>
+                    </footer>
+                </aside>
+
+                <section class="guide-surface" aria-label="紅華祭会場案内">
+                    <section class="event-band top-band" id="topBand">
+                        <header class="band-header"><div class="ribbon"><span id="topBandTitle">ものづくり</span></div><p>画像をタッチすると左側に詳しい案内が表示されます</p></header>
+                        <div class="event-icon-grid top-grid" id="topEvents"></div>
+                    </section>
+
+                    <section class="map-panel" aria-labelledby="mapTitle">
+                        <header class="map-header">
+                            <div><p class="section-en">CAMPUS MAP</p><h2 id="mapTitle">校内マップ</h2></div>
+                            <div class="filter-status" aria-live="polite"><i id="activeFilterDot"></i><strong id="activeFilterLabel">すべて表示</strong></div>
+                            <div class="map-tools" aria-label="マップの拡大縮小">
+                                <button id="zoomOutButton" type="button" aria-label="マップを縮小">−</button>
+                                <button id="zoomResetButton" class="zoom-reset" type="button">全体</button>
+                                <button id="zoomInButton" type="button" aria-label="マップを拡大">＋</button>
+                            </div>
+                        </header>
+                        <div class="map-viewport" id="mapViewport">
+                            <div class="map-stage" id="mapStage">
+                                <img class="campus-map" id="campusMap" alt="校内マップ" draggable="false">
+                                <div class="map-markers" id="mapMarkers" aria-label="マップ上の案内地点"></div>
+                                <aside id="floorOverlay" class="floor-overlay" hidden aria-label="選択中の企画のフロア図">
+                                    <header><strong id="floorOverlayTitle"></strong><span>フロア案内</span></header>
+                                    <div id="floorOverlayStage" class="floor-overlay-stage"><img id="floorOverlayImage" alt=""><div id="floorOverlayMarkers" class="floor-overlay-markers"></div></div>
+                                </aside>
+                            </div>
+                        </div>
+                        <div class="facility-strip"><strong>設備を探す</strong><div id="facilityEvents" class="facility-buttons"></div></div>
+                    </section>
+
+                    <div class="lower-bands">
+                        <section class="event-band lower-left-band" id="lowerLeftBand">
+                            <header class="band-header"><div class="ribbon"><span id="lowerLeftTitle">紅華祭</span></div><p>ステージ・屋外企画</p></header>
+                            <div class="event-icon-grid lower-grid" id="lowerLeftEvents"></div>
+                        </section>
+                        <section class="event-band lower-right-band" id="lowerRightBand">
+                            <header class="band-header"><div class="ribbon"><span id="lowerRightTitle">食べもの</span></div><p>模擬店・飲みもの</p></header>
+                            <div class="event-icon-grid lower-grid" id="lowerRightEvents"></div>
+                        </section>
+                    </div>
+                </section>
+            </main>
+
+            <div class="loading-screen" id="loading" role="status"><div><span class="loading-ring" aria-hidden="true"></span><p>案内マップを準備しています</p></div></div>
+            <div class="error-screen" id="errorScreen" hidden><div><span aria-hidden="true">!</span><h2>案内情報を読み込めませんでした</h2><button type="button" onclick="window.location.reload()">再読み込み</button></div></div>
+        </div>
+    </div>
+
+    <template id="eventIconTemplate">
+        <button class="event-icon" type="button"><span class="event-image-wrap"><span class="event-visual"></span><b class="location-badge"></b></span><strong class="event-title"></strong></button>
+    </template>
+    <template id="facilityButtonTemplate">
+        <button class="facility-button" type="button"><span class="facility-visual"></span><span class="facility-title"></span></button>
+    </template>
+</body>
+</html>

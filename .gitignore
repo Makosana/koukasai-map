@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+data/backups/
+data/image_originals/
+server_address.txt

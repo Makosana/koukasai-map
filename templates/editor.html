@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>紅華祭 案内マップ作成</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/editor-revision.css') }}">
+    <script defer src="{{ url_for('static', filename='js/editor.js') }}"></script>
+</head>
+<body>
+<div class="screen-shell" id="screenShell">
+<div class="editor-canvas" id="editorCanvas">
+    <header class="editor-header">
+        <div class="editor-brand"><span class="brand-mark">紅</span><div><small>POLYTECH FESTA</small><h1>案内マップ作成</h1></div></div>
+        <div id="saveState" class="save-state" role="status">読み込み中</div>
+        <nav class="header-actions" aria-label="保存と確認">
+            <button type="button" id="floorEditorButton">フロア図編集</button>
+            <button type="button" id="previewButton">案内画面を確認</button>
+            <button type="button" id="saveButton" class="save-button">すべて保存</button>
+        </nav>
+    </header>
+    <main id="workspace" class="editor-workspace">
+        <div class="map-toolbar">
+            <div class="creation-tools">
+                <div class="pin-tool">
+                    <button type="button" id="pinButton" class="pin-choice" aria-expanded="false" aria-controls="categoryPopover">
+                        <span id="pinToolVisual" aria-hidden="true"></span><span><strong>標準ピン</strong><small>カテゴリーを選んで配置</small></span><span class="chevron">▾</span>
+                    </button>
+                    <section id="categoryPopover" class="category-popover" hidden aria-label="カテゴリー選択">
+                        <label for="categoryInput">カテゴリー選択</label>
+                        <div class="category-select-row"><span id="categorySwatch" class="category-swatch"></span><select id="categoryInput"></select></div>
+                        <div class="popover-actions"><button type="button" id="cancelPinButton">取り消し</button><button type="button" id="addPinButton" class="primary">OK</button></div>
+                    </section>
+                </div>
+                <button type="button" id="imageButton" class="image-add"><b aria-hidden="true">▧</b><span><strong>画像追加</strong><small>画像をマップに配置</small></span></button>
+                <button type="button" id="floorOverlayButton" class="floor-overlay-button" aria-pressed="false"><b aria-hidden="true">▱</b><span><strong>フロア案内枠</strong><small>位置と大きさを編集</small></span></button>
+            </div>
+            <div class="toolbar-message">
+                <span id="defaultToolbarMessage">ピンはダブルタップで企画を編集できます</span>
+                <div id="manualNumberingBar" class="manual-numbering-bar" hidden>
+                    <strong id="manualNumberingStatus"></strong>
+                    <button type="button" id="finishManualNumberingButton">完了</button>
+                    <button type="button" id="cancelManualNumberingButton">取り消し</button>
+                </div>
+            </div>
+            <div class="marker-tools">
+                <button type="button" id="renumberButton" class="renumber-button">番号振り直し</button>
+                <div class="selected-marker-info"><span id="selectionName">未選択</span><label class="lock-control"><input id="lockInput" type="checkbox" disabled><span>位置固定</span></label></div>
+                <div class="size-tools">
+                    <label for="sizeInput" id="sizeLabel">サイズ</label>
+                    <button type="button" id="sizeDownButton" disabled aria-label="サイズを1小さくする">−</button>
+                    <input id="sizeInput" type="number" min="28" max="260" step="1" value="40" disabled aria-describedby="sizeHint">
+                    <button type="button" id="sizeUpButton" disabled aria-label="サイズを1大きくする">＋</button>
+                    <small id="sizeHint">対象を選択</small>
+                </div>
+            </div>
+        </div>
+        <div class="map-section-heading"><div><small>CAMPUS MAP EDITOR</small><strong>マップ配置</strong></div><span id="mapSelectionMessage">ピン・画像を選択するとサイズと位置固定を変更できます</span></div>
+        <section class="map-area" id="mapArea" aria-label="校内マップ編集">
+            <div class="map-stage" id="mapStage">
+                <img id="mapImage" alt="校内マップ" draggable="false">
+                <div id="mapMarkers" class="map-markers"></div>
+                <button type="button" id="floorOverlayEditor" class="floor-overlay-editor" hidden aria-label="フロア案内枠を移動">
+                    <strong>フロア案内</strong><span>選択した企画のフロア図を表示</span>
+                    <i aria-hidden="true"></i>
+                </button>
+            </div>
+        </section>
+        <div class="map-hint" id="mapHint">ドラッグで移動 ／ ピンをダブルクリックして企画を登録</div>
+        <button type="button" id="trash" class="trash" aria-label="選択中のピン・画像を削除" title="ここへドラッグして削除">
+            <svg viewBox="0 0 40 48" aria-hidden="true"><path d="M6 12h28l-2 32H8zM3 8h34M14 8V3h12v5M14 17v20m6-20v20m6-20v20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ごみ箱</span>
+        </button>
+        <aside id="sidePanel" class="side-panel" hidden aria-label="ピンの編集">
+            <div class="side-heading"><span id="sidePinVisual"></span><strong id="sideCategory"></strong><button type="button" id="closePanelButton" aria-label="編集欄を閉じる">×</button></div>
+            <section id="iconListPanel" class="icon-list-panel">
+                <button type="button" id="addIconButton" class="add-icon-button"><span>アイコン追加</span><b aria-hidden="true">＋</b></button>
+                <div class="icon-list" id="iconList" aria-label="このピンに登録した企画"></div>
+                <p id="iconSelectionHint" class="selection-hint">アイコンを選択して編集・削除できます</p>
+                <footer class="panel-footer"><button type="button" id="deleteIconButton" class="danger-outline" disabled>削除</button><button type="button" id="editIconButton" class="primary" disabled>編集</button></footer>
+            </section>
+            <form id="detailForm" class="detail-form" hidden>
+                <div class="detail-fields">
+                    <div class="detail-icon"><img id="detailImage" alt="編集中の企画アイコン"><button type="button" id="changeIconButton" class="text-button">画像を変更</button></div>
+                    <p id="legacyNotice" class="legacy-notice" hidden>既存の企画です。新しい必須項目を入力して決定してください。</p>
+                    <label><span id="titleFieldLabel">企画・展示名</span> <em>必須</em><input id="titleInput" name="title" required maxlength="80" placeholder="企画・展示名を入力"></label>
+                    <div class="field-row department-row" id="departmentFields">
+                        <label>学科 <em>必須</em><select id="departmentInput" name="department" required><option value="">選択してください</option><option>専門機械</option><option>専門電気</option><option>専門電子</option><option>応用機械</option><option>応用電気</option><option>応用電子</option><option>その他</option></select></label>
+                        <label>学年 <em>必須</em><select id="gradeInput" name="grade" disabled><option value="">選択</option><option value="1">1年</option><option value="2">2年</option></select></label>
+                    </div>
+                    <label id="organizationField">その他団体 <em>「その他」のとき必須</em><input id="organizationInput" name="organization" maxlength="80" disabled placeholder="団体名を入力"></label>
+                    <div class="field-row location-row">
+                        <label>場所（号棟） <em>必須</em><select id="buildingInput" name="building" required><option value="">選択</option><option value="1">1号棟</option><option value="2">2号棟</option><option value="3">3号棟</option><option value="4">4号棟</option><option value="5">5号棟</option><option value="6">6号棟</option><option value="7">7号棟</option><option value="8">8号棟</option><option value="9">9号棟</option><option>本館</option><option>体育館</option><option>屋外</option></select></label>
+                        <label>階 <em id="floorRequired">必須</em><select id="floorInput" name="floor" disabled><option value="">選択</option><option value="1">1階</option><option value="2">2階</option><option value="3">3階</option><option value="4">4階</option></select></label>
+                    </div>
+                    <label class="description-field" id="descriptionField">説明文 <em>必須</em><textarea id="descriptionInput" name="description" required maxlength="1200" placeholder="企画・展示の内容を入力"></textarea></label>
+                </div>
+                <footer class="panel-footer"><button type="button" id="cancelDetailButton">取り消し</button><button type="submit" id="confirmDetailButton" class="primary">決定</button></footer>
+            </form>
+        </aside>
+    </main>
+    <div class="loading-overlay" id="loadingOverlay"><strong id="loadingText">編集データを読み込んでいます</strong><button type="button" id="retryButton" hidden>再読み込み</button></div>
+</div>
+</div>
+<input id="imageFileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+<dialog id="deleteDialog" class="delete-dialog" aria-labelledby="deleteTitle">
+    <h2 id="deleteTitle">このアイコンを削除しますか？</h2>
+    <div class="delete-preview" id="deletePreview"></div><strong id="deleteItemName"></strong><p id="deleteMessage">このピンから企画情報を削除します。</p>
+    <footer><button type="button" id="cancelDeleteButton">取り消し</button><button type="button" id="confirmDeleteButton" class="danger">削除</button></footer>
+</dialog>
+<dialog id="renumberDialog" class="renumber-dialog" aria-labelledby="renumberTitle">
+    <h2 id="renumberTitle">ピン番号を振り直す</h2>
+    <p>各カテゴリーの番号は1から始まります。</p>
+    <fieldset><legend>対象</legend><label><input type="radio" name="renumberScope" value="all" checked>全カテゴリー</label><label><input type="radio" name="renumberScope" value="category">カテゴリーを指定</label></fieldset>
+    <label class="dialog-field">カテゴリー<select id="renumberCategory" disabled></select></label>
+    <fieldset><legend>割り当て方法</legend><label><input type="radio" name="renumberMode" value="auto" checked>自動割り当て</label><label id="manualModeLabel"><input type="radio" name="renumberMode" value="manual" disabled>手動割り当て</label></fieldset>
+    <p id="renumberHelp">現在のピンの登録順に、カテゴリーごとに1から割り当てます。</p>
+    <footer><button type="button" id="cancelRenumberButton">取り消し</button><button type="button" id="startRenumberButton" class="primary">実行</button></footer>
+</dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

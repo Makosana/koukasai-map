@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>紅華祭 フロア図編集</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/floor_editor.css') }}">
+    <script defer src="{{ url_for('static', filename='js/floor_editor.js') }}"></script>
+</head>
+<body>
+<div class="screen-shell" id="screenShell">
+<div class="floor-canvas" id="floorCanvas">
+    <header class="topbar">
+        <div class="brand"><span>紅</span><div><small>POLYTECH FESTA</small><h1>フロア図編集</h1></div></div>
+        <div id="saveState" class="save-state">読み込み中</div>
+        <nav><button type="button" id="mapEditorButton">校内マップ編集へ戻る</button><button type="button" id="previewButton">案内画面を確認</button><button type="button" id="saveButton" class="save-button">すべて保存</button></nav>
+    </header>
+    <main class="workspace">
+        <aside class="sidebar">
+            <section class="floor-choice">
+                <label for="floorPlanSelect">編集するフロア図</label>
+                <select id="floorPlanSelect"></select>
+                <p>フロア図を切り替えても、配置内容は保持されます。</p>
+            </section>
+            <section class="tool-section item-section">
+                <header><div><small>EVENTS</small><h2>この階の企画</h2></div><span id="floorItemCount"></span></header>
+                <div id="floorItemList" class="item-list"></div>
+            </section>
+            <section class="add-tools">
+                <button type="button" id="fileImageButton"><b>＋</b>画像ファイル追加</button>
+                <button type="button" id="textButton"><b>T</b>文字・入口名追加</button>
+            </section>
+        </aside>
+        <section class="editor-area">
+            <div class="edit-toolbar">
+                <div><small>FLOOR MAP EDITOR</small><h2 id="currentFloorTitle">フロア図</h2></div>
+                <p id="editHint">企画・画像・文字を追加し、ドラッグして配置します</p>
+                <div class="selection-tools">
+                    <span id="selectionName">未選択</span>
+                    <label class="lock-control"><input id="lockInput" type="checkbox" disabled>位置固定</label>
+                    <label class="size-control">サイズ<button type="button" id="sizeDownButton" disabled>−</button><input id="sizeInput" type="number" min="24" max="400" value="80" disabled><button type="button" id="sizeUpButton" disabled>＋</button></label>
+                </div>
+            </div>
+            <div class="floor-area" id="floorArea">
+                <div class="floor-stage" id="floorStage"><img id="floorImage" alt="フロア図" draggable="false"><div id="floorMarkers" class="floor-markers"></div></div>
+            </div>
+            <div class="stage-note"><span>ダブルクリック：文字を編集</span><span>位置はフロア図に対する割合で保存されます</span></div>
+            <button type="button" id="trash" class="trash" disabled><span aria-hidden="true">⌫</span><b>ごみ箱</b></button>
+        </section>
+    </main>
+    <div class="loading-overlay" id="loadingOverlay"><strong id="loadingText">フロア図を読み込んでいます</strong><button type="button" id="retryButton" hidden>再読み込み</button></div>
+</div>
+</div>
+<input id="imageFileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+<dialog id="textDialog" class="text-dialog">
+    <h2 id="textDialogTitle">文字を追加</h2>
+    <label>表示する文字<input id="floorTextInput" maxlength="80" placeholder="例：入口"></label>
+    <label>ラベル色<select id="floorTextColor"><option value="#3274b6">青</option><option value="#e50062">ピンク</option><option value="#e05a4f">赤</option><option value="#168650">緑</option><option value="#f39800">オレンジ</option><option value="#5b4439">茶</option></select></label>
+    <footer><button type="button" id="cancelTextButton">取り消し</button><button type="button" id="confirmTextButton" class="primary">決定</button></footer>
+</dialog>
+<dialog id="deleteDialog" class="delete-dialog">
+    <h2>この配置要素を削除しますか？</h2><strong id="deleteName"></strong><p>企画情報や元画像は削除せず、このフロア図からの配置だけを削除します。</p>
+    <footer><button type="button" id="cancelDeleteButton">取り消し</button><button type="button" id="confirmDeleteButton" class="danger">削除</button></footer>
+</dialog>
+<div id="toast" class="toast" role="status"></div>
+</body>
+</html>
