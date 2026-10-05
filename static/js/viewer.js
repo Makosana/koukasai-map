@@ -52,6 +52,8 @@ const elements = {
     zoomResetButton: document.getElementById("zoomResetButton"),
     resetAllButton: document.getElementById("resetAllButton"),
     loading: document.getElementById("loading"),
+    rotateHint: document.getElementById("rotateHint"),
+    rotateHintClose: document.getElementById("rotateHintClose"),
     errorScreen: document.getElementById("errorScreen"),
     eventIconTemplate: document.getElementById("eventIconTemplate"),
     facilityTemplate: document.getElementById("facilityButtonTemplate"),
@@ -70,7 +72,16 @@ function fitCanvas() {
     elements.screenShell.style.width = `${DESIGN_WIDTH * scale}px`;
     elements.screenShell.style.height = `${DESIGN_HEIGHT * scale}px`;
     elements.kioskCanvas.style.transform = `scale(${scale})`;
+    updateRotateHint();
     fitMapStage();
+}
+
+function updateRotateHint() {
+    const hint = elements.rotateHint;
+    if (!hint) return;
+    const portraitPhone = window.innerWidth <= 900 && window.innerHeight > window.innerWidth;
+    const dismissed = sessionStorage.getItem("kouka-rotate-hint-dismissed") === "1";
+    hint.hidden = !portraitPhone || dismissed;
 }
 
 function fitMapStage() {
@@ -678,6 +689,10 @@ function bindEvents() {
     elements.zoomOutButton.addEventListener("click", () => setZoom(state.zoom - 0.25));
     elements.zoomResetButton.addEventListener("click", () => setZoom(1));
     elements.resetAllButton.addEventListener("click", resetAll);
+    elements.rotateHintClose?.addEventListener("click", () => {
+        sessionStorage.setItem("kouka-rotate-hint-dismissed", "1");
+        updateRotateHint();
+    });
     elements.mapViewport.addEventListener("click", (event) => {
         if (event.target.closest(".map-marker")) return;
         selectCategory("all");

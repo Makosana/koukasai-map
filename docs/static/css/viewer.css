@@ -990,6 +990,60 @@ button:focus-visible { outline: 4px solid #256fb0; outline-offset: 3px; }
 .map-marker.is-selected::after { inset:-8px; border:3px solid var(--marker-color,#3274b6); background:transparent; box-shadow:0 0 0 3px #fff; border-radius:16px; }
 .map-marker.is-image.is-selected::after { display:block; }
 
+/* スマートフォンを縦向きで開いたときの案内 */
+.rotate-hint {
+    position: fixed;
+    z-index: 300;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgb(48 27 20 / 72%);
+    text-align: center;
+}
+
+.rotate-hint[hidden] { display: none; }
+
+.rotate-hint > div {
+    width: min(320px, 100%);
+    padding: 28px 22px 22px;
+    border-radius: 20px;
+    background: #fff8e8;
+    box-shadow: 0 12px 32px rgb(48 27 20 / 35%);
+}
+
+.rotate-hint span {
+    display: grid;
+    width: 64px;
+    height: 64px;
+    margin: auto;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: #b5432a;
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.rotate-hint p {
+    margin: 16px 0 20px;
+    color: #493c35;
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.6;
+}
+
+.rotate-hint button {
+    min-height: 48px;
+    padding: 0 22px;
+    border: 2px solid #b5432a;
+    border-radius: 12px;
+    color: #b5432a;
+    background: #fff;
+    font-size: 15px;
+    font-weight: 900;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         scroll-behavior: auto !important;
