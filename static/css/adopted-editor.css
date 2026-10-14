@@ -1,0 +1,19 @@
+.facility-add b { background: #3274b6; font-family: Georgia, serif; }
+.rotate-image-button { min-height: 34px; padding: 4px 8px; font-size: 11px; white-space: nowrap; }
+.asset-dialog { width: 750px; max-width: calc(100vw - 32px); max-height: calc(100vh - 36px); padding: 24px; color: #392b26; border: 1px solid #ddc8ba; border-radius: 18px; box-shadow: 0 20px 65px #392b2640; background: #fffdf9; }
+.asset-dialog::backdrop { background: #26221c66; }
+.asset-dialog header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.asset-dialog h2 { margin: 0 0 6px; font-size: 23px; }
+.asset-dialog header p { margin: 0 0 18px; font-size: 13px; color: #725e50; }
+.asset-dialog header button { min-width: 44px; font-size: 24px; }
+.asset-search-label { display: block; font-size: 13px; font-weight: 700; }
+.asset-search-label input { width: 100%; box-sizing: border-box; margin-top: 6px; }
+#assetStatus { min-height: 19px; margin: 12px 0; color: #725e50; font-size: 13px; }
+.asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 12px; max-height: 380px; overflow-y: auto; padding: 4px; }
+.asset-choice { display: flex; flex-direction: column; align-items: center; gap: 9px; min-height: 146px; padding: 12px 8px; background: #fff; border: 1px solid #dfcbb7; border-radius: 12px; }
+.asset-choice:hover, .asset-choice:focus-visible { border-color: #3274b6; outline: 3px solid #3274b633; }
+.asset-choice img { width: 94px; height: 94px; object-fit: contain; pointer-events: none; }
+.asset-choice strong { font-size: 12px; overflow-wrap: anywhere; }
+.asset-empty { grid-column: 1 / -1; padding: 30px 10px; font-size: 14px; text-align: center; }
+.asset-dialog footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 22px; }
+.asset-dialog footer button { min-height: 46px; }

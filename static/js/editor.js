@@ -8,6 +8,7 @@ const state = {
     selectedItemId: null, draft: null, dirty: false, busy: false,
     drag: null, imagePurpose: null, pendingDelete: null, lastTap: null,
     numbering: null, overlayEditing: false, provisionalMarkerId: null,
+    assetMode: null, assetsLoaded: false,
 };
 const $ = (id) => document.getElementById(id);
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -18,6 +19,16 @@ const linkedItems = (marker) => (marker?.itemIds || []).map(itemById).filter(Boo
 const uid = (prefix) => `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 const assetUrl = (path) => path ? `/static/images/${String(path).split("/").map(encodeURIComponent).join("/")}` : "";
 const floorOverlayLayout = () => state.guide?.settings?.floorOverlay;
+const FACILITY_ICONS = [
+    {name: "男性用トイレ", path: "library/男性用トイレ.png"},
+    {name: "女性用トイレ", path: "library/女性用トイレ.png"},
+    {name: "多目的トイレ", path: "floors/多目的トイレ.png"},
+    {name: "受付", path: "library/受付.png"},
+    {name: "授乳室", path: "library/授乳室.png"},
+    {name: "喫煙場所", path: "library/喫煙場所.png"},
+    {name: "ウォーターサーバー", path: "library/ウォーターサーバー.png"},
+];
+const ARROW_ASSET = {name: "矢印", path: "floors/矢印.png"};
 let toastTimer;
 
 function createPinSvg(labelValue, color) {
@@ -78,7 +89,7 @@ function fitMap() {
 }
 function updateControls() {
     const blocked = state.busy || Boolean(state.draft) || Boolean(state.numbering) || !state.guide;
-    ["pinButton", "imageButton", "floorOverlayButton", "addIconButton"].forEach((id) => $(id).disabled = blocked);
+    ["pinButton", "facilityButton", "imageButton", "floorOverlayButton", "addIconButton"].forEach((id) => $(id).disabled = blocked);
     $("previewButton").disabled = blocked;
     $("renumberButton").disabled = blocked;
     const marker = state.guide && markerById(state.selectedMarkerId);
@@ -88,6 +99,7 @@ function updateControls() {
     ["sizeInput", "sizeUpButton", "sizeDownButton"].forEach((id) => $(id).disabled = blocked || (!marker && !overlay));
     $("lockInput").disabled = blocked || !marker;
     $("trash").disabled = blocked || !marker;
+    $("rotateImageButton").disabled = blocked || marker?.kind !== "image";
     if ((marker || overlay) && document.activeElement !== $("sizeInput")) $("sizeInput").value = overlay ? floorOverlayLayout().width : marker.size;
     $("sizeInput").min = overlay ? "20" : "28";
     $("sizeInput").max = overlay ? "75" : "260";
@@ -199,7 +211,7 @@ function renderMarkers() {
         button.style.zIndex = marker.layer + 1;
         updateMarkerPosition(marker, button);
         const category = categoryById(marker.categoryId);
-        const label = marker.kind === "pin" ? `${category?.label || ""} ピン${marker.label}` : linkedItems(marker)[0]?.title || "施設画像";
+        const label = marker.kind === "pin" ? `${category?.label || ""} ピン${marker.label}` : linkedItems(marker)[0]?.title || (marker.usage === "decoration" ? "装飾画像" : "施設画像");
         button.setAttribute("aria-label", label);
         button.title = marker.kind === "pin" ? `${label}（ダブルクリックで編集）` : label;
         button.append(marker.kind === "pin" ? createPinSvg(marker.label, marker.color) : imageElement(marker.image));
@@ -471,8 +483,8 @@ function requestDeleteMarker(markerId = state.selectedMarkerId) {
     state.pendingDelete = {kind: "marker", id: marker.id};
     $("deleteTitle").textContent = "選択中のピン・画像を削除しますか？";
     $("deletePreview").replaceChildren(marker.kind === "pin" ? createPinSvg(marker.label, marker.color) : imageElement(marker.image));
-    $("deleteItemName").textContent = marker.kind === "pin" ? `ピン ${marker.label}` : linkedItems(marker)[0]?.title || "施設画像";
-    $("deleteMessage").textContent = marker.itemIds.length ? `この場所に登録した企画情報（${marker.itemIds.length}件）も削除します。` : "削除後は元に戻せません。";
+    $("deleteItemName").textContent = marker.kind === "pin" ? `ピン ${marker.label}` : linkedItems(marker)[0]?.title || "装飾画像";
+    $("deleteMessage").textContent = marker.itemIds.length ? `この場所に登録した企画情報（${marker.itemIds.length}件）も削除します。` : "地図上の配置だけを削除します。元の画像素材は残ります。";
     $("deleteDialog").showModal(); $("cancelDeleteButton").focus();
 }
 function confirmDelete() {
@@ -494,6 +506,57 @@ function removeMarker(id) {
     if (state.openMarkerId === id) { state.openMarkerId = null; state.selectedItemId = null; }
     renderMarkers(); renderPanel(); markDirty(); toast("ピン・画像と、その場所の企画情報を削除しました。");
 }
+async function openAssetPicker(kind) {
+    if (!state.guide || state.busy || state.draft || state.numbering) return;
+    closeCategory();
+    state.assetMode = kind;
+    $("assetSearchInput").value = "";
+    $("assetDialogTitle").textContent = kind === "facility" ? "施設のアイコンを選ぶ" : "マップに置く画像を選ぶ";
+    $("assetDialogHelp").textContent = kind === "facility" ? "トイレ・受付などを選び、施設名と場所を登録します。" : "矢印やイラストを、企画情報を入力せずに置けます。";
+    $("assetStatus").textContent = "";
+    renderAssetPicker();
+    $("assetDialog").showModal();
+    $("assetSearchInput").focus();
+    if (kind === "decoration" && !state.assetsLoaded) {
+        $("assetStatus").textContent = "画像素材を読み込んでいます…";
+        try {
+            const response = await fetch("/api/editor/assets", {cache: "no-store"});
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error("画像素材を読み込めませんでした。");
+            state.assets = [...new Map([...result.assets, ...state.assets].map((asset) => [asset.path, asset])).values()];
+            state.assetsLoaded = true;
+            if ($("assetDialog").open && state.assetMode === kind) { $("assetStatus").textContent = ""; renderAssetPicker(); }
+        } catch (error) {
+            if ($("assetDialog").open && state.assetMode === kind) $("assetStatus").textContent = `${error.message}「PCの画像を追加」も使えます。`;
+        }
+    }
+}
+function renderAssetPicker() {
+    const query = $("assetSearchInput").value.trim().toLocaleLowerCase("ja");
+    const assets = state.assetMode === "facility" ? FACILITY_ICONS : [ARROW_ASSET, ...state.assets];
+    const matches = assets.filter((asset) => asset.name.toLocaleLowerCase("ja").includes(query));
+    const buttons = matches.map((asset) => {
+        const button = document.createElement("button"); button.type = "button"; button.className = "asset-choice"; button.dataset.assetPath = asset.path;
+        button.append(imageElement(asset.thumbnail || asset.path));
+        const name = document.createElement("strong"); name.textContent = asset.name; button.append(name);
+        button.setAttribute("aria-label", `${asset.name}を選ぶ`);
+        button.addEventListener("click", () => {
+            const kind = state.assetMode;
+            $("assetDialog").close(); state.assetMode = null;
+            state.imagePurpose = {kind, markerId: state.openMarkerId};
+            useImage(asset);
+        });
+        return button;
+    });
+    if (!buttons.length) { const empty = document.createElement("p"); empty.className = "asset-empty"; empty.textContent = "一致する画像はありません。別の名前で探すか、PCの画像を追加してください。"; buttons.push(empty); }
+    $("assetGrid").replaceChildren(...buttons);
+}
+function rotateSelectedImage() {
+    const marker = markerById(state.selectedMarkerId);
+    if (!marker || marker.kind !== "image" || state.busy || state.draft || state.numbering) return;
+    marker.rotation = ((Number(marker.rotation || 0) + 90 + 180) % 360) - 180;
+    renderMarkers(); markDirty(); toast("画像を90°回転しました。");
+}
 function chooseImage(kind) {
     if (state.busy || (state.draft && kind !== "replace")) return;
     if (kind === "item" && !state.openMarkerId) return;
@@ -506,6 +569,13 @@ function useImage(asset) {
         if (state.draft) { state.draft.image = asset.path; $("detailImage").src = assetUrl(asset.path); }
     } else if (purpose.kind === "item") {
         if (state.openMarkerId === purpose.markerId) beginDraft(asset.path);
+    } else if (purpose.kind === "decoration") {
+        if (state.guide.markers.length >= 800) { toast("ピン・画像は800件以内で登録してください。", true); return; }
+        const marker = newMarker({usage: "decoration", kind: "image", categoryId: null, label: "", image: asset.path, size: 80});
+        state.guide.markers.push(marker); state.selectedMarkerId = marker.id;
+        state.openMarkerId = null; state.selectedItemId = null; state.overlayEditing = false;
+        renderFloorOverlayEditor(); renderMarkers(); renderPanel(); markDirty();
+        toast("画像を置きました。ドラッグ・サイズ変更・90°回転ができます。");
     } else {
         if (state.guide.markers.length >= 800 || state.guide.items.length >= 500) { toast("登録件数の上限に達しました。", true); return; }
         const category = state.guide.categories.find((entry) => entry.area === "facility");
@@ -625,7 +695,15 @@ function bindEvents() {
     $("categoryInput").addEventListener("change", () => $("categorySwatch").style.background = categoryById($("categoryInput").value).color);
     $("cancelPinButton").addEventListener("click", closeCategory); $("addPinButton").addEventListener("click", addPin);
     document.addEventListener("pointerdown", (event) => { if (!event.target.closest(".pin-tool")) closeCategory(); });
-    $("imageButton").addEventListener("click", () => chooseImage("facility"));
+    $("facilityButton").addEventListener("click", () => openAssetPicker("facility"));
+    $("imageButton").addEventListener("click", () => openAssetPicker("decoration"));
+    $("rotateImageButton").addEventListener("click", rotateSelectedImage);
+    const closeAssetPicker = () => { $("assetDialog").close(); state.assetMode = null; };
+    $("closeAssetDialog").addEventListener("click", closeAssetPicker);
+    $("cancelAssetDialog").addEventListener("click", closeAssetPicker);
+    $("assetDialog").addEventListener("cancel", () => state.assetMode = null);
+    $("assetSearchInput").addEventListener("input", renderAssetPicker);
+    $("uploadAssetButton").addEventListener("click", () => { const kind = state.assetMode; closeAssetPicker(); chooseImage(kind); });
     $("floorOverlayButton").addEventListener("click", toggleFloorOverlay);
     $("floorOverlayEditor").addEventListener("pointerdown", beginFloorOverlayDrag);
     $("addIconButton").addEventListener("click", () => chooseImage("item"));

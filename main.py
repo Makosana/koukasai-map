@@ -32,6 +32,6 @@ def health():
 if __name__ == "__main__":
     print("紅華祭案内画面を起動しました。")
     print("このPC: http://127.0.0.1:5000/")
-    print("別のPC: http://サーバーPCのIPv4アドレス:5000/")
+    print("この版は自分のPC専用です。他のPCからは接続できません。")
     print("終了する場合は Ctrl+C を押してください。")
-    serve(app, host="0.0.0.0", port=5000, threads=8)
+    serve(app, host="127.0.0.1", port=5000, threads=8)

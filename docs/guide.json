@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "revision": 18,
+  "revision": 19,
   "settings": {
     "title": "紅華祭",
     "subtitle": "POLYTECH FESTA",
@@ -320,23 +320,6 @@
       "detailsVersion": 2
     },
     {
-      "id": "item_1790924648031_akuoolhi",
-      "type": "stall",
-      "categoryId": "food",
-      "title": "カフェ",
-      "organizer": "応用電子 2年",
-      "description": "カフェオレ頼んでカフェラテ来ても俺はわからん",
-      "waitState": "none",
-      "waitMinutes": null,
-      "image": "uploads/2e6f6aebda06_image.png",
-      "department": "応用電子",
-      "grade": "2",
-      "organization": "",
-      "building": "屋外",
-      "floor": "",
-      "detailsVersion": 2
-    },
-    {
       "id": "item_1790924819782_9afr1e0b",
       "type": "experience",
       "categoryId": "festival",
@@ -388,57 +371,6 @@
       "detailsVersion": 2
     },
     {
-      "id": "item_1790925016692_pc8rtntj",
-      "type": "experience",
-      "categoryId": "festival",
-      "title": "VRたいけん",
-      "organizer": "vR",
-      "description": "一人五分",
-      "waitState": "none",
-      "waitMinutes": null,
-      "image": "uploads/f0a14fffb926_VR.png",
-      "department": "その他",
-      "grade": "",
-      "organization": "vR",
-      "building": "屋外",
-      "floor": "",
-      "detailsVersion": 2
-    },
-    {
-      "id": "item_1790925082013_mqit9yfd",
-      "type": "experience",
-      "categoryId": "festival",
-      "title": "ストラックアウト",
-      "organizer": "ボール",
-      "description": "名前を初めて知った",
-      "waitState": "none",
-      "waitMinutes": null,
-      "image": "uploads/a3fcb46304ad_image.png",
-      "department": "その他",
-      "grade": "",
-      "organization": "ボール",
-      "building": "屋外",
-      "floor": "",
-      "detailsVersion": 2
-    },
-    {
-      "id": "item_1790925130404_tashnx70",
-      "type": "experience",
-      "categoryId": "festival",
-      "title": "けいおん",
-      "organizer": "サークル",
-      "description": "ぜひ見たいね",
-      "waitState": "none",
-      "waitMinutes": null,
-      "image": "uploads/92cabb6335fb_band_woman_vocal.png",
-      "department": "その他",
-      "grade": "",
-      "organization": "サークル",
-      "building": "体育館",
-      "floor": "",
-      "detailsVersion": 2
-    },
-    {
       "id": "item_1790925164938_u7g4sdlf",
       "type": "experience",
       "categoryId": "festival",
@@ -468,23 +400,6 @@
       "department": "その他",
       "grade": "",
       "organization": "国家",
-      "building": "屋外",
-      "floor": "",
-      "detailsVersion": 2
-    },
-    {
-      "id": "item_1790925276161_qs2dkxw7",
-      "type": "experience",
-      "categoryId": "festival",
-      "title": "ゆうぐ",
-      "organizer": "エアー",
-      "description": "遊びたいな",
-      "waitState": "none",
-      "waitMinutes": null,
-      "image": "uploads/b1ff647ad716_image.png",
-      "department": "その他",
-      "grade": "",
-      "organization": "エアー",
       "building": "屋外",
       "floor": "",
       "detailsVersion": 2
@@ -702,8 +617,8 @@
       "label": "3",
       "color": "#e50062",
       "image": null,
-      "x": 92.986,
-      "y": 71.528,
+      "x": 94.028,
+      "y": 71.097,
       "size": 30.0,
       "rotation": 0.0,
       "layer": 5,
@@ -715,9 +630,7 @@
       "itemIds": [
         "item_1790924819782_9afr1e0b",
         "item_1790924905815_1mzznynp",
-        "item_1790924952335_tijqphci",
-        "item_1790925016692_pc8rtntj",
-        "item_1790925082013_mqit9yfd"
+        "item_1790924952335_tijqphci"
       ],
       "usage": "experience",
       "kind": "pin",
@@ -734,9 +647,8 @@
     },
     {
       "id": "marker_1790923674698_uumjijh9",
-      "itemId": "item_1790925130404_tashnx70",
+      "itemId": "item_1790925164938_u7g4sdlf",
       "itemIds": [
-        "item_1790925130404_tashnx70",
         "item_1790925164938_u7g4sdlf"
       ],
       "usage": "experience",
@@ -772,25 +684,6 @@
       "locked": false
     },
     {
-      "id": "marker_1790923703090_yi8ch3qx",
-      "itemId": "item_1790925276161_qs2dkxw7",
-      "itemIds": [
-        "item_1790925276161_qs2dkxw7"
-      ],
-      "usage": "experience",
-      "kind": "pin",
-      "categoryId": "festival",
-      "label": "4",
-      "color": "#f39800",
-      "image": null,
-      "x": 84.453,
-      "y": 79.135,
-      "size": 30.0,
-      "rotation": 0.0,
-      "layer": 9,
-      "locked": false
-    },
-    {
       "id": "marker_1790923717474_eb6eslum",
       "itemId": "item_1790923873326_zbryjcql",
       "itemIds": [
@@ -804,8 +697,7 @@
         "item_1790924399979_yratxu0i",
         "item_1790924501580_fry5me7q",
         "item_1790924565869_2zvqviwg",
-        "item_1790924620027_a5ckox4k",
-        "item_1790924648031_akuoolhi"
+        "item_1790924620027_a5ckox4k"
       ],
       "usage": "stall",
       "kind": "pin",
@@ -876,6 +768,23 @@
       "rotation": 0.0,
       "layer": 13,
       "locked": false
+    },
+    {
+      "id": "marker_1791943439870_rvr2au9t",
+      "itemId": null,
+      "itemIds": [],
+      "usage": "decoration",
+      "kind": "image",
+      "categoryId": null,
+      "label": "",
+      "color": "#e50062",
+      "image": "floors/矢印.png",
+      "x": 20.952,
+      "y": 65.931,
+      "size": 80.0,
+      "rotation": 0.0,
+      "layer": 14,
+      "locked": false
     }
   ],
   "floorPlans": [
@@ -893,8 +802,8 @@
           "image": null,
           "text": "",
           "color": "#e50062",
-          "x": 32.794,
-          "y": 56.788,
+          "x": 32.9,
+          "y": 56.191,
           "size": 100.0,
           "rotation": 0.0,
           "layer": 1,
@@ -907,8 +816,8 @@
           "image": null,
           "text": "",
           "color": "#e50062",
-          "x": 45.818,
-          "y": 56.303,
+          "x": 45.079,
+          "y": 56.751,
           "size": 100.0,
           "rotation": 0.0,
           "layer": 2,
@@ -944,8 +853,8 @@
           "image": null,
           "text": "",
           "color": "#e50062",
-          "x": 69.989,
-          "y": 51.563,
+          "x": 70.728,
+          "y": 51.712,
           "size": 155.0,
           "rotation": 0.0,
           "layer": 2,

@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#9b3124">
     <title>紅華祭 キャンパスガイド</title>
     <link rel="stylesheet" href="static/css/viewer.css">
+    <link rel="stylesheet" href="static/css/adopted-viewer.css">
     <script defer src="static/js/viewer.js"></script>
     <script>window.KOUKA_STATIC_BASE="static/images/";window.KOUKA_GUIDE_URL="guide.json";</script>
 </head>
@@ -22,6 +23,7 @@
                 </div>
                 <div class="top-message"><i aria-hidden="true"></i><span id="instructionText">画面をタッチしてください</span></div>
                 <button class="reset-button" id="resetAllButton" type="button"><b aria-hidden="true">⌂</b>最初に戻る</button>
+                <button class="motion-button" id="motionButton" type="button" aria-pressed="true">動き：あり</button>
             </header>
 
             <main class="workspace">
@@ -69,6 +71,7 @@
                             <div class="map-stage" id="mapStage">
                                 <img class="campus-map" id="campusMap" alt="校内マップ" draggable="false">
                                 <div class="map-markers" id="mapMarkers" aria-label="マップ上の案内地点"></div>
+                                <div class="map-effects" id="mapEffects" aria-hidden="true"></div>
                                 <aside id="floorOverlay" class="floor-overlay" hidden aria-label="選択中の企画のフロア図">
                                     <header><strong id="floorOverlayTitle"></strong><span>フロア案内</span></header>
                                     <div id="floorOverlayStage" class="floor-overlay-stage"><img id="floorOverlayImage" alt=""><div id="floorOverlayMarkers" class="floor-overlay-markers"></div></div>
@@ -92,7 +95,6 @@
             </main>
 
             <div class="loading-screen" id="loading" role="status"><div><span class="loading-ring" aria-hidden="true"></span><p>案内マップを準備しています</p></div></div>
-    <div class="rotate-hint" id="rotateHint" hidden><div><span aria-hidden="true">↻</span><p>スマートフォンは横向きにすると<br>見やすくなります</p><button id="rotateHintClose" type="button">このまま縦向きで見る</button></div></div>
             <div class="error-screen" id="errorScreen" hidden><div><span aria-hidden="true">!</span><h2>案内情報を読み込めませんでした</h2><button type="button" onclick="window.location.reload()">再読み込み</button></div></div>
         </div>
     </div>

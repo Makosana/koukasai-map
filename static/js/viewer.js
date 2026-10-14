@@ -12,6 +12,7 @@ const state = {
     detailReturnPinId: null,
     detailReturnCategory: "all",
     zoom: 1,
+    motionOff: false,
 };
 
 const elements = {
@@ -52,19 +53,14 @@ const elements = {
     zoomResetButton: document.getElementById("zoomResetButton"),
     resetAllButton: document.getElementById("resetAllButton"),
     loading: document.getElementById("loading"),
-    rotateHint: document.getElementById("rotateHint"),
-    rotateHintClose: document.getElementById("rotateHintClose"),
     errorScreen: document.getElementById("errorScreen"),
     eventIconTemplate: document.getElementById("eventIconTemplate"),
     facilityTemplate: document.getElementById("facilityButtonTemplate"),
 };
 
-const STATIC_IMAGE_BASE = window.KOUKA_STATIC_BASE ?? "/static/images/";
-const GUIDE_URL = window.KOUKA_GUIDE_URL ?? "/api/guide";
-
 function assetUrl(path) {
     if (!path) return "";
-    return `${STATIC_IMAGE_BASE}${String(path).split("/").map(encodeURIComponent).join("/")}`;
+    return `/static/images/${String(path).split("/").map(encodeURIComponent).join("/")}`;
 }
 
 function fitCanvas() {
@@ -72,16 +68,7 @@ function fitCanvas() {
     elements.screenShell.style.width = `${DESIGN_WIDTH * scale}px`;
     elements.screenShell.style.height = `${DESIGN_HEIGHT * scale}px`;
     elements.kioskCanvas.style.transform = `scale(${scale})`;
-    updateRotateHint();
     fitMapStage();
-}
-
-function updateRotateHint() {
-    const hint = elements.rotateHint;
-    if (!hint) return;
-    const portraitPhone = window.innerWidth <= 900 && window.innerHeight > window.innerWidth;
-    const dismissed = sessionStorage.getItem("kouka-rotate-hint-dismissed") === "1";
-    hint.hidden = !portraitPhone || dismissed;
 }
 
 function fitMapStage() {
@@ -296,6 +283,7 @@ function renderFacilities() {
 
 function renderMarkers() {
     elements.mapMarkers.replaceChildren();
+    document.getElementById("mapEffects").replaceChildren();
     state.guide.markers.slice().sort((a, b) => a.layer - b.layer).forEach((marker) => {
         const linked = itemsForMarker(marker);
         const item = linked[0];
@@ -308,6 +296,8 @@ function renderMarkers() {
         element.style.zIndex = String(marker.layer + 1);
         element.style.setProperty("--marker-size", `${marker.size}px`);
         element.style.setProperty("--marker-rotation", `${marker.rotation}deg`);
+        element.style.setProperty("--marker-color", marker.color || "#3274b6");
+        element.style.setProperty("--marker-anchor-y", marker.kind === "image" ? "-50%" : "-100%");
         if (marker.kind === "pin") {
             element.style.setProperty("--marker-color", marker.color);
             element.append(createPinSvg(marker.label, marker.color));
@@ -330,6 +320,7 @@ function renderMarkers() {
         const containsSelected = Boolean(state.selectedItemId && linked.some((entry) => entry.id === state.selectedItemId));
         if (marker.usage !== "decoration") element.classList.toggle("is-muted", Boolean(categoryMuted));
         element.classList.toggle("is-selected", containsSelected || state.selectedPinId === marker.id);
+        if (interactive) element.setAttribute("aria-pressed", String(containsSelected || state.selectedPinId === marker.id));
         element.dataset.markerId = marker.id;
         if (interactive) {
             element.setAttribute("aria-label", marker.kind === "pin" ? `ピン${marker.label}の企画を表示` : `${item.title}の案内を表示`);
@@ -554,6 +545,35 @@ function selectPin(markerId, returnCategory = "all") {
     state.detailReturnCategory = returnCategory;
     state.detailReturnPinId = null;
     renderAllControls(); renderPinIntro(marker);
+    playSelectionEffect(marker);
+}
+
+function motionEnabled() {
+    return !state.motionOff && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+function syncMotionControl() {
+    const enabled = motionEnabled();
+    document.body.classList.toggle("no-motion", !enabled);
+    const button = document.getElementById("motionButton");
+    button.textContent = enabled ? "動き：あり" : "動き：なし";
+    button.setAttribute("aria-pressed", String(enabled));
+    button.title = matchMedia("(prefers-reduced-motion: reduce)").matches ? "端末の動きを減らす設定を優先しています" : "選択時の星の動きを切り替えます";
+    if (!enabled) document.getElementById("mapEffects").replaceChildren();
+}
+function playSelectionEffect(marker) {
+    if (!marker || !motionEnabled()) return;
+    const layer = document.getElementById("mapEffects");
+    layer.replaceChildren();
+    for (let index = 0; index < 7; index++) {
+        const star = document.createElement("span"); star.className = "selection-star"; star.textContent = "✦";
+        star.style.left = `${marker.x}%`; star.style.top = `${marker.y}%`;
+        star.style.marginTop = marker.kind === "pin" ? `${-marker.size * .65}px` : "0";
+        star.style.setProperty("--dx", `${Math.cos(index / 7 * Math.PI * 2) * 60}px`);
+        star.style.setProperty("--dy", `${Math.sin(index / 7 * Math.PI * 2) * 60}px`);
+        star.style.setProperty("--star-color", ["#e99a1d", "#b91c57", "#08745f"][index % 3]);
+        layer.append(star);
+        window.setTimeout(() => star.remove(), 700);
+    }
 }
 
 function renderItemDetail(item) {
@@ -621,6 +641,7 @@ function selectItem(itemId, returnCategory = "all", returnPinId = null) {
     state.detailReturnCategory = returnCategory;
     renderAllControls();
     renderItemDetail(item);
+    playSelectionEffect(markerForItem(itemId));
 }
 
 function setZoom(nextZoom) {
@@ -662,7 +683,7 @@ function escapeHtml(value) {
 
 async function refreshGuide() {
     try {
-        const response = await fetch(GUIDE_URL, { cache: "no-store" });
+        const response = await fetch("/api/guide", { cache: "no-store" });
         if (!response.ok) return;
         const guide = await response.json();
         if (!state.guide || guide.revision !== state.guide.revision) {
@@ -684,15 +705,19 @@ async function refreshGuide() {
 }
 
 function bindEvents() {
+    try { state.motionOff = localStorage.getItem("koukasai-original-motion") === "off"; } catch { /* Private browser settings may disable storage. */ }
+    syncMotionControl();
+    document.getElementById("motionButton").addEventListener("click", () => {
+        state.motionOff = !state.motionOff;
+        try { localStorage.setItem("koukasai-original-motion", state.motionOff ? "off" : "on"); } catch { /* The current choice still works. */ }
+        syncMotionControl();
+    });
+    matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", syncMotionControl);
     window.addEventListener("resize", fitCanvas);
     elements.zoomInButton.addEventListener("click", () => setZoom(state.zoom + 0.25));
     elements.zoomOutButton.addEventListener("click", () => setZoom(state.zoom - 0.25));
     elements.zoomResetButton.addEventListener("click", () => setZoom(1));
     elements.resetAllButton.addEventListener("click", resetAll);
-    elements.rotateHintClose?.addEventListener("click", () => {
-        sessionStorage.setItem("kouka-rotate-hint-dismissed", "1");
-        updateRotateHint();
-    });
     elements.mapViewport.addEventListener("click", (event) => {
         if (event.target.closest(".map-marker")) return;
         selectCategory("all");
@@ -703,7 +728,7 @@ async function start() {
     fitCanvas();
     bindEvents();
     try {
-        const response = await fetch(GUIDE_URL, { cache: "no-store" });
+        const response = await fetch("/api/guide", { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         state.guide = await response.json();
         resetAll();

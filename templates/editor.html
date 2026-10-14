@@ -6,6 +6,7 @@
     <title>紅華祭 案内マップ作成</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/editor.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/editor-revision.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/adopted-editor.css') }}">
     <script defer src="{{ url_for('static', filename='js/editor.js') }}"></script>
 </head>
 <body>
@@ -33,7 +34,8 @@
                         <div class="popover-actions"><button type="button" id="cancelPinButton">取り消し</button><button type="button" id="addPinButton" class="primary">OK</button></div>
                     </section>
                 </div>
-                <button type="button" id="imageButton" class="image-add"><b aria-hidden="true">▧</b><span><strong>画像追加</strong><small>画像をマップに配置</small></span></button>
+                <button type="button" id="facilityButton" class="image-add facility-add"><b aria-hidden="true">i</b><span><strong>施設アイコン</strong><small>トイレ・受付などを配置</small></span></button>
+                <button type="button" id="imageButton" class="image-add"><b aria-hidden="true">▧</b><span><strong>画像を置く</strong><small>矢印・イラストを自由に配置</small></span></button>
                 <button type="button" id="floorOverlayButton" class="floor-overlay-button" aria-pressed="false"><b aria-hidden="true">▱</b><span><strong>フロア案内枠</strong><small>位置と大きさを編集</small></span></button>
             </div>
             <div class="toolbar-message">
@@ -47,6 +49,7 @@
             <div class="marker-tools">
                 <button type="button" id="renumberButton" class="renumber-button">番号振り直し</button>
                 <div class="selected-marker-info"><span id="selectionName">未選択</span><label class="lock-control"><input id="lockInput" type="checkbox" disabled><span>位置固定</span></label></div>
+                <button type="button" id="rotateImageButton" class="rotate-image-button" disabled>90°回転</button>
                 <div class="size-tools">
                     <label for="sizeInput" id="sizeLabel">サイズ</label>
                     <button type="button" id="sizeDownButton" disabled aria-label="サイズを1小さくする">−</button>
@@ -103,6 +106,13 @@
 </div>
 </div>
 <input id="imageFileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+<dialog id="assetDialog" class="asset-dialog" aria-labelledby="assetDialogTitle">
+    <header><div><h2 id="assetDialogTitle">画像を選ぶ</h2><p id="assetDialogHelp"></p></div><button type="button" id="closeAssetDialog" aria-label="画像選択を閉じる">×</button></header>
+    <label class="asset-search-label">名前で探す<input id="assetSearchInput" type="search" placeholder="例：矢印、トイレ" maxlength="100"></label>
+    <p id="assetStatus" role="status"></p>
+    <div id="assetGrid" class="asset-grid"></div>
+    <footer><button type="button" id="cancelAssetDialog">取り消し</button><button type="button" id="uploadAssetButton" class="primary">PCの画像を追加</button></footer>
+</dialog>
 <dialog id="deleteDialog" class="delete-dialog" aria-labelledby="deleteTitle">
     <h2 id="deleteTitle">このアイコンを削除しますか？</h2>
     <div class="delete-preview" id="deletePreview"></div><strong id="deleteItemName"></strong><p id="deleteMessage">このピンから企画情報を削除します。</p>
