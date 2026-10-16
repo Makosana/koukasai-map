@@ -61,8 +61,8 @@ function markDirty() { state.dirty = true; renderSaveState(); }
 function renderSaveState() {
     $("saveState").className = `save-state${state.dirty ? "" : " saved"}`;
     $("saveState").textContent = state.busy ? "処理中…" : state.numbering ? "ピン番号を手動割り当て中" : state.draft ? "詳細情報を編集中" : state.dirty ? "未保存の変更があります" : "保存済み";
-    $("saveButton").disabled = state.busy || Boolean(state.draft) || Boolean(state.numbering) || !state.guide;
-    $("saveButton").title = state.numbering ? "番号の手動割り当てを完了または取り消してください" : state.draft ? "詳細情報を決定または取り消してから保存してください" : "";
+    $("saveButton").disabled = state.busy || Boolean(state.numbering) || !state.guide;
+    $("saveButton").title = state.numbering ? "番号の手動割り当てを完了または取り消してください" : state.draft ? "入力中の内容を確定して保存します" : "";
 }
 function setBusy(busy, message = "処理しています") {
     state.busy = busy;
@@ -424,14 +424,15 @@ function syncBuilding() {
     if (!needsFloor) $("floorInput").value = "";
     $("floorInput").setCustomValidity("");
 }
-function confirmDraft(event) {
-    event.preventDefault(); if (!state.draft || state.busy) return;
+function confirmDraft(event, options = {}) {
+    if (event) event.preventDefault();
+    if (!state.draft || state.busy) return false;
     for (const field of ["title", "organization", "description"]) {
         const input = $(`${field}Input`); input.value = input.value.trim();
         input.setCustomValidity(input.required && !input.disabled && !input.value ? "この項目を入力してください。" : "");
     }
-    if (!$("detailForm").reportValidity()) return;
-    const marker = markerById(state.openMarkerId); if (!marker) return;
+    if (!$("detailForm").reportValidity()) return false;
+    const marker = markerById(state.openMarkerId); if (!marker) return false;
     const item = clone(state.draft); delete item.isNew;
     for (const field of ["title", "department", "grade", "organization", "building", "floor", "description"]) item[field] = $(`${field}Input`).value.trim();
     if (item.type === "facility") {
@@ -453,7 +454,8 @@ function confirmDraft(event) {
     state.selectedItemId = item.id; state.draft = null;
     if (item.type === "facility") { state.openMarkerId = null; state.selectedItemId = null; }
     markDirty(); renderMarkers(); renderPanel();
-    toast("企画情報を決定しました。「すべて保存」で保存できます。");
+    if (!options.silent) toast("企画情報を決定しました。「すべて保存」で保存できます。");
+    return true;
 }
 function cancelDraft() {
     if (state.busy) return;
@@ -674,7 +676,15 @@ function startRenumbering() {
     if (mode === "manual") beginManualNumbering(categoryId); else autoRenumber(categoryId);
 }
 async function saveGuide() {
-    if (state.busy || state.draft || !state.guide) return false;
+    if (state.busy || !state.guide) return false;
+    if (state.numbering) {
+        toast("番号の手動割り当てを完了または取り消してから保存してください。", true);
+        return false;
+    }
+    if (state.draft && !confirmDraft(null, {silent: true})) {
+        toast("未入力の項目があります。赤く示された欄を入力してから、もう一度「すべて保存」を押してください。", true);
+        return false;
+    }
     closeCategory(); setBusy(true, "案内マップを保存しています");
     try {
         const response = await fetch("/api/editor/save", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({expectedRevision: state.guide.revision, guide: state.guide})});
