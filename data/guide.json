@@ -1,6 +1,6 @@
 {
   "schemaVersion": 4,
-  "revision": 24,
+  "revision": 25,
   "settings": {
     "title": "紅華祭",
     "subtitle": "POLYTECH FESTA",
@@ -619,7 +619,7 @@
       "image": null,
       "x": 94.028,
       "y": 71.097,
-      "size": 30.0,
+      "size": 60.0,
       "rotation": 0.0,
       "layer": 5,
       "locked": false
