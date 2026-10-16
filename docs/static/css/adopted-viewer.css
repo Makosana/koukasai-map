@@ -1,0 +1,13 @@
+.topbar { grid-template-columns: 540px minmax(0, 1fr) 210px 140px; column-gap: 12px; }
+.motion-button { min-width: 115px; min-height: 46px; padding: 10px 14px; border: 1px solid #fff6; border-radius: 10px; color: #fff; background: #ffffff16; font-size: 15px; font-weight: 800; cursor: pointer; }
+.motion-button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.map-marker.is-selected, .map-marker.is-selected:hover, .map-marker.is-selected:active { z-index: 200 !important; opacity: 1; animation: none; transform: translate(-50%, var(--marker-anchor-y, -100%)) rotate(var(--marker-rotation, 0deg)) scale(1.2); filter: drop-shadow(0 0 4px #fff) drop-shadow(0 4px 7px #493c35); }
+.map-marker.is-selected::after { display: block; inset: -8px; border: 3px solid var(--marker-color, #3274b6); border-radius: 16px; background: transparent; box-shadow: 0 0 0 4px #fff, 0 0 0 8px #ffffff50; pointer-events: none; }
+.map-marker.is-image.is-selected { transform-origin: center; }
+.map-marker.is-image.is-selected::after { display: block; }
+.map-effects { position: absolute; inset: 0; z-index: 350; overflow: hidden; pointer-events: none; }
+.selection-star { position: absolute; font-size: 20px; line-height: 1; color: var(--star-color); pointer-events: none; animation: selectedStarBurst 650ms ease-out both; }
+@keyframes selectedStarBurst { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.4); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(90deg) scale(.6); } }
+.no-motion .map-marker, .no-motion .map-marker::after { animation: none !important; transition: none !important; }
+.no-motion .selection-star { display: none; }
+@media (prefers-reduced-motion: reduce) { .selection-star { display: none; } .map-marker { animation: none !important; transition: none !important; } }

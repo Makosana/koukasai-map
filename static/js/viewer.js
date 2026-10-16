@@ -58,9 +58,12 @@ const elements = {
     facilityTemplate: document.getElementById("facilityButtonTemplate"),
 };
 
+const STATIC_IMAGE_BASE = window.KOUKA_STATIC_BASE ?? "/static/images/";
+const GUIDE_URL = window.KOUKA_GUIDE_URL ?? "/api/guide";
+
 function assetUrl(path) {
     if (!path) return "";
-    return `/static/images/${String(path).split("/").map(encodeURIComponent).join("/")}`;
+    return `${STATIC_IMAGE_BASE}${String(path).split("/").map(encodeURIComponent).join("/")}`;
 }
 
 function fitCanvas() {
@@ -683,7 +686,7 @@ function escapeHtml(value) {
 
 async function refreshGuide() {
     try {
-        const response = await fetch("/api/guide", { cache: "no-store" });
+        const response = await fetch(GUIDE_URL, { cache: "no-store" });
         if (!response.ok) return;
         const guide = await response.json();
         if (!state.guide || guide.revision !== state.guide.revision) {
@@ -728,7 +731,7 @@ async function start() {
     fitCanvas();
     bindEvents();
     try {
-        const response = await fetch("/api/guide", { cache: "no-store" });
+        const response = await fetch(GUIDE_URL, { cache: "no-store" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         state.guide = await response.json();
         resetAll();

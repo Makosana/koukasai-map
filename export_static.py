@@ -26,9 +26,23 @@ def render_index() -> str:
     return html.replace("</head>", f"    {STATIC_CONFIG}\n</head>", 1)
 
 
+def reset_output_dir(path) -> None:
+    """docs を空にする。Windows では作業フォルダーとして開かれているとフォルダー自体は消せない。"""
+    if not path.exists():
+        return
+    for child in path.iterdir():
+        if child.is_dir() and not child.is_symlink():
+            shutil.rmtree(child)
+        else:
+            child.unlink()
+    try:
+        path.rmdir()
+    except PermissionError:
+        pass
+
+
 def export() -> None:
-    if OUTPUT_DIR.exists():
-        shutil.rmtree(OUTPUT_DIR)
+    reset_output_dir(OUTPUT_DIR)
     (OUTPUT_DIR / "static" / "css").mkdir(parents=True)
     (OUTPUT_DIR / "static" / "js").mkdir(parents=True)
 
@@ -38,6 +52,9 @@ def export() -> None:
     (OUTPUT_DIR / "guide.json").write_text(json.dumps(guide, ensure_ascii=False, indent=2), encoding="utf-8")
 
     shutil.copy2(STATIC_DIR / "css" / "viewer.css", OUTPUT_DIR / "static" / "css" / "viewer.css")
+    adopted_css = STATIC_DIR / "css" / "adopted-viewer.css"
+    if adopted_css.exists():
+        shutil.copy2(adopted_css, OUTPUT_DIR / "static" / "css" / "adopted-viewer.css")
     shutil.copy2(STATIC_DIR / "js" / "viewer.js", OUTPUT_DIR / "static" / "js" / "viewer.js")
     for folder in IMAGE_FOLDERS:
         source = STATIC_IMAGE_DIR / folder
